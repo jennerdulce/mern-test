@@ -260,3 +260,14 @@ const getGoals = asyncHandler(async(req, res) => {
     res.status(200).json({ message: 'Get goals'})
 })
 ```
+
+### Setting up MongoDB Atlas
+
+- MongoDB is a document database
+    - have collections of documents / data in the form of a json object
+- relational database
+    - tables, rows, columns
+- Atlas is a cloud database
+- Compass is a desktop GUI
+- follow tutorial at [Traversy Media](https://youtu.be/-0exw-9YJBo?t=2211)
+- How to connect cluster to application [Connect Atlas Cluster](https://www.mongodb.com/docs/atlas/tutorial/connect-to-your-cluster/#connect-to-your-atlas-cluster)

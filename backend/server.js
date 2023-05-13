@@ -1,8 +1,13 @@
+const colors = require('colors')
 const express = require('express')
 const dotenv = require('dotenv').config()
 const port = process.env.PORT || 3000
 const app = express()
 const { errorHandler } = require('./middleware/errorMiddleware')
+const connectDB = require('./config/db')
+
+// Connection to MongoDB Atlas
+connectDB()
 
 // Allows req.body to be used
 app.use(express.json())
