@@ -261,6 +261,10 @@ const getGoals = asyncHandler(async(req, res) => {
 })
 ```
 
+### Creating a new entry
+
+- Ensure that you pass data into the request body
+
 ### Setting up MongoDB Atlas
 
 - MongoDB is a document database
@@ -271,3 +275,109 @@ const getGoals = asyncHandler(async(req, res) => {
 - Compass is a desktop GUI
 - follow tutorial at [Traversy Media](https://youtu.be/-0exw-9YJBo?t=2211)
 - How to connect cluster to application [Connect Atlas Cluster](https://www.mongodb.com/docs/atlas/tutorial/connect-to-your-cluster/#connect-to-your-atlas-cluster)
+- obtain your url link
+- create new URI in your `.env` file
+- ensure you replace the password with the proper password
+- create a `config` folder
+- create a file name `db.js` in new `config` folder
+- create function to connect to db upon server startup
+- export function
+- import function into `server.js`
+- invoke connection to db function
+
+### Adding models to our database
+
+- create new folder called `model` within `backend` folder
+- create new file called `goalModel.js` in `model` folder
+
+#### Defining our schema
+
+- creating the fields for a model i.e. Model for Car
+    - Car
+        - color
+        - type
+        - year
+        - make
+
+- in `goalModel.js`
+- import mongoose
+    - `const mongoose = requrie('mongoose')`
+- create a schema
+
+```js
+const goalSchema = mongoose.Schema({
+    text: {
+        type: String,
+        required: [true, 'Please add a text value]
+    }
+}, {
+    timestamps: true // creates a updated at and created at field
+})
+
+module.exports = mongoose.model('Goal', goalSchema) // creates a Goal model with our schema
+```
+
+- import newly created model into controller
+- importing this model has built in methods that you can utilize to make requests to your API
+
+```js
+// Within controller
+const Goal = require('../models/goalModel')
+
+const getGoals = asyncHandler(async (req, res) => {
+    const goals = await Goal.find()
+    res.status(200).json(goals)
+})
+
+```
+
+- add functionality to create method (post)
+
+```js
+const setGoal = asyncHandler(async (req, res) => {
+    if (!req.body.text) {
+        res.status(400)
+        throw new Error('Please add a text field')
+    }
+
+    const goal = await Goal.create({
+        text: req.body.text
+    })
+    res.status(200).json(goal)
+})
+```
+
+- add functionality to update method (put)
+
+```js
+const goal = await Goal.findById(req.params.id)
+if(!goal){
+    res.status(400)
+    throw new Error('Goal not found')
+}
+
+const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, req.body, {
+    new: true
+})
+res.status(200).json(updatedGoal)
+```
+
+- add functionality to delete method (delete)
+    - is very similar to update method
+
+
+```js
+const goal = await Goal.findById(req.params.id)
+if(!goal){
+    res.status(400)
+    throw new Error('Goal not found')
+}
+
+await Goal.findByIdAndDelete(req.params.id)
+res.status(200).json({ 
+        message: 'Goal Deleted',
+        id: req.params.id 
+    })
+
+    
+```
