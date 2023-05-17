@@ -15,13 +15,10 @@ app.use(express.urlencoded({ extended: false }))
 
 // Routes
 const goalRoutes = require('./routes/goalRoutes')
+const userRoutes = require('./routes/userRoutes')
 
 app.use('/api/goals', goalRoutes)
-
-// used before we imported routes
-// app.get('/api/goals', (req, res) => {
-//     res.json(message: 'get goals')
-// })
-
+app.use('/api/users', userRoutes)
 app.use(errorHandler)
+
 app.listen(port, () => console.log(`Server started on port ${port}`))

@@ -379,5 +379,95 @@ res.status(200).json({
         id: req.params.id 
     })
 
+
+```
+
+### JWT
+
+- install JWT to app
+- npm i jsonwebtoken
+
+#### Add user model
+
+- create new file in models folder called `userModel.js`
+- again bring in mongoose with `const mongoose = require('mongoose)`
+
+```js
+const userSchema = mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, 'Please add a name]
+    },
+    password: {
+        type: String,
+        required: [true, 'Please add a password]
+    },
+    email: {
+        type: String,
+        required: [true, 'Please add a email],
+        unique: true
+    },
+    // name: {
+    //     type: String,
+    //     required: [true, 'Please add a name]
+    // },
     
+},
+{
+    timestamps: true
+})
+
+module.exports = mongoose.model('User', userSchema)
+```
+
+#### Creating a relationship
+
+- Each USER will create a goal
+- goals are tied to users so we have to make that connection
+- in the `goalModel.js`
+
+```js
+const goalSchema = mongoose.Schema({
+    // Add user property
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        requried: true,
+        ref: 'User' // Which MODEL this objectID in type refers to
+    },
+    text: {
+        type: String,
+        required: [true, 'Please add ad text value']
+    }
+})
+```
+
+#### Creating user routes
+
+- With creating a new model, you need to also create new routes as well as a controller for that model
+- create a new file called `userRoutes.js` in the `routes` folder
+
+```js
+const express = require('express)
+const router = express.Router()
+const { registerUser } = require('../controllers/userController')
+
+router.post('/', registerUser)
+
+module.exports = router
+```
+
+- go into `server.js` import the newly created routes
+    - `app.use('/api/users', requrie('./routes/userRoutes'))`
+
+#### Create a controller
+
+```js
+const registerUser = (req, res) => {
+    res.json({ message: 'register user '})
+}
+
+module.exports = {
+    registerUser
+}
+
 ```
