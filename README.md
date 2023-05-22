@@ -20,7 +20,7 @@ PORT = 3000
     - will create package.json
     - enter `server.js` as entry point
 - install dependencies
-    - in root folder enter command in terminal `npm i express dotenv mongoose colors`
+    - in root folder enter command in terminal `npm i express dotenv mongoose colors bcryptjs jsonwebtoken`
     - express: server
     - dotenv: enables you to create environment variables
     - mongoose: database
@@ -447,7 +447,7 @@ const goalSchema = mongoose.Schema({
 - create a new file called `userRoutes.js` in the `routes` folder
 
 ```js
-const express = require('express)
+const express = require('express')
 const router = express.Router()
 const { registerUser } = require('../controllers/userController')
 
@@ -471,3 +471,182 @@ module.exports = {
 }
 
 ```
+
+#### Registering a user
+
+- This step requires JSONWEBTOKEN
+- To do this, we will be using jwt (JSONWEBTOKEN), bcrypt, and Mongoose
+- import the following within the a controller that will utilize JWT
+    - where some sort of login is
+
+```js
+const jwt = require('jsonwebtoken')
+
+// bcrypt to hash our passwords
+const bcrypt = requrie('bcryptjs')
+const asyncHandler = require('express-async-handler')
+
+
+// controller method with basic authentication checks as a user registers
+const registerUser = asyncHandler(async (req, res) => {
+    const { name, email, password } = req.body
+    
+    // While registering a user, ensure that all 3 requirements are filled out
+    if (!name || !email || !password) {
+        res.status(400)
+    }
+
+    // Check to see if the user exists
+    const userExists = await Uer.findOne( {email} )
+    if (userExists) {
+        res.status(400)
+        throw new Error('User already Exists')
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10) // how many time to salt
+    const hashedPassword = await bcrypt.hash(password, salt) // password chosen and salt
+
+    // create / register user
+    const user = await User.create({
+        name,
+        email,
+        password: hashedPassword
+    })
+
+    if(user) {
+       res.status(201).json({
+        _id: user.id,
+        name: user.name,
+        email: user.email
+       }) 
+    } else {
+        res.status(400)
+        throw new Error('Invalid user data')
+    }
+})
+
+```
+
+#### login functionality
+
+- create a controller method that will authenticate and login a user
+
+```js
+
+const loginUser = (req, res) => {
+
+const { email, password } = req.body
+
+// checks to find a user
+const user = await User.findOne({email})
+
+// use a bcrypt method to compare password with hashed password in the database
+if (user && (await bcrypt.compare(password, user.password))) {
+    res.status(201).json({
+        _id: user.id,
+        name: user.name,
+        email: user.email
+       }) 
+    } else {
+        res.status(400)
+        throw new Error('Invalid user data')
+    }
+
+}
+```
+
+#### utilizing jsonwebtoken
+
+- created when user registers
+- checked when user logs in
+- create an environmental variable in `.env` file
+    - `JWT_SECRET = asecret` 
+- restart server
+- within a controller
+
+```js
+// Generate JWT
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: '30d'
+    })
+}
+
+// add this new helper function to the controller method that registers a new user
+const registerUser = asyncHandler(async (req, res) => {
+    const {name, email, password} = req.body
+
+    if (!name || !email || !password) {
+        res.status(400)
+    }
+
+    const userExists = await User.findOne({ email })
+    if ((userExists)) {
+        res.status(400)
+        throw new Error('User already exists')
+    }
+
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
+
+    const user = await User.create({
+        name,
+        email,
+        password: hashedPassword
+    })
+
+    if (user) {
+        res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            token: generateToken(user._id) // Here
+        })
+    } else {
+        res.status(400)
+        throw new Error('Invalid user data')
+    }
+})
+```
+
+#### Create auth middleware to check token
+
+- create new js file called `authMiddleware.js` in `middleware` directory
+- you have an auth header that can be sent through http request, so thats what we want to check
+```js
+const jwt = require('jsonwebtoken')
+const asyncHandler = require('express-async-handler')
+const User = require('../models/userModel')
+
+const protect = asyncHandler(async (req, res, next) => {
+    let token
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            // get token from header
+            token = req.headers.authorization.split(' ')[1]
+            // ['Bearer', 1231415134131451]
+
+            const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
+            // get user from the token
+            req.user = await User.findById(decoded.id).select('-password')
+            next()
+        } catch(error) {
+            console.log(error)
+
+            // 401 - not authorized
+            res.status(401)
+            throw new Error('Not authorized')
+        }
+    }
+
+    if (!token) {
+        res.status(401)
+        throw new Error('Not authorized, no token')
+    }
+})
+```
+
+- 

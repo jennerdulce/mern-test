@@ -18,6 +18,9 @@ const userSchema = mongoose.Schema({
     //     type: String,
     //     required: [true, 'Please add a ']
     // }
+},
+{
+    timestamps: true
 })
 
 module.exports = mongoose.model('User', userSchema)
