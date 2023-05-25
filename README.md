@@ -568,6 +568,8 @@ if (user && (await bcrypt.compare(password, user.password))) {
 ```js
 // Generate JWT
 const generateToken = (id) => {
+    // This is how we pretty much create a property for the jwt token
+    // we will attatch the users id to the token
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d'
     })
@@ -601,7 +603,7 @@ const registerUser = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
-            token: generateToken(user._id) // Here
+            token: generateToken(user._id) // utilizes a user's id here
         })
     } else {
         res.status(400)
@@ -631,6 +633,8 @@ const protect = asyncHandler(async (req, res, next) => {
             const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
             // get user from the token
+            // a user property is created in the reqest object here
+            // IMPORTANT: this req.user can be used in any other controller method
             req.user = await User.findById(decoded.id).select('-password')
             next()
         } catch(error) {
@@ -649,4 +653,21 @@ const protect = asyncHandler(async (req, res, next) => {
 })
 ```
 
-- 
+-  import this protect auth middleware into routes folder wherever you want to user
+
+```js
+router.get('/me', protect, getMe)
+
+
+// within the getMe controlle method
+// REMEMBR: since a user property has been created in the request object, we now have access to that information on any other controller method
+
+const getMe = asyncHandler(async (req, res) => {
+    const { _id, name, email } = await User.findById(req.user.id)
+    res.status(200).json({
+        id: _id,
+        name: name,
+        email: email
+    })
+})
+```
