@@ -1,5 +1,8 @@
 # mern-test
 
+- `npm run server` to run backend
+- `npm run client` to run frontend
+
 ## BEFORE PRODUCTION CREATE. env FOLDER
 
 ```js
@@ -796,4 +799,223 @@ const deleteGoal = asyncHandler(async (req, res) => {
     // OLD
     // res.status(200).json({ message: 'Deleted goal'})
 })
+```
+
+### creating frontend
+
+- in root directory of app
+- enter command `npx create-react-app frontend --template redux`
+    - `frontend` puts into a folder called `frontend`
+    - `--template redux` installs redux toolkit and react redux package
+- if not working enter `npx create-react-app@latest`
+- notice that there an extra folder called features that has a counter created by installing redux
+- delete app.css and logo.svg
+- make `app.js` look like this
+- install react icons with `npm i react-icons` while in the frontend directory
+
+```js
+function App() {
+  return (
+    <div className="App">
+     <h1>Hello World</h1>
+    </div>
+  );
+}
+
+export default App;
+```
+
+- your reducer store has already been created for you while adding redux to the command
+- look in `src -> app -> store.js`
+
+```js
+import { configureStore } from '@reduxjs/toolkit';
+import counterReducer from '../features/counter/counterSlice';
+
+export const store = configureStore({
+  reducer: {
+    counter: counterReducer,
+  },
+});
+
+```
+
+- to create state, all you have to do is create a slice and add the it to the store
+- replaced contents of css from here [CSS for Index](https://github.com/bradtraversy/mern-tutorial/blob/main/frontend/src/index.css)
+- done
+
+#### create login, register, dashboard
+
+- in `src` folder create folder called pages
+- create following files in `pages`
+    - `Register.jsx`
+    - `Login.jsx`
+    - `Dashboard.jsx`
+- Create out contents by making them functional components by typing `rfce` to bring out boiler plates
+
+#### creating routes
+
+- you need to create routes in order for you to reach the pages
+- these are different from api endpoints
+- cd into your `frontend` folder
+- enter command `npm i react-router-dom`
+- in `app.js` bring in react router dom and create routes
+
+```js
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+
+// Import pages
+import Dashboard from './pages/Dashboard'
+import Login from './pages/Login'
+import Register from './pages/Register'
+
+function App() {
+  return (
+    <>
+        <Router>
+            <div className="container">
+                <Routes>
+                    <Route path='/' element={<Dashboard />}  /> // element is the jsx document you want to open when this route is hit
+                    <Route path='/login' element={<Login />} />
+                    <Route path='/register' element={<Register />} />
+                <Routes />
+            </div>
+        </Router>
+    </>
+  );
+}
+
+export default App;
+
+```
+
+#### Create basic navigation
+
+- create a new folder called `components` in the `src` folder
+- create `Header.jsx`
+- make sure you have react-icons installed in frontend
+- in header.jsx
+```js
+import {FaSignInAlt, FaSignOutAlt, FaUser} from 'react-icons/fa'
+import {Link} from 'react-router-dom' // When clicked bring you to route
+
+function Header() {
+    return (
+        <header className='header'>
+            <div className="logo">
+                <Link to='/'>Goal Setter</Link>
+            </div>
+            <ul>
+                <li>
+                    <Link to='/login'>
+                        <FaSignInAlt /> Login
+                    </Link>
+                </li>
+                <li>
+                    <Link to='/register'>
+                        <FaUser /> Register
+                    </Link>
+                </li>
+            </ul>
+        </header>
+    )
+}
+```
+
+- go into app.js and bring in Header.jsx component
+
+#### creaing login and register forms
+
+- import `useState` and `useEffect`
+    - we will have component level state to be used and changed via input form
+
+```jsx
+import React from 'react'
+import {useState, useEffect} from React
+import {FaUser} from 'react-icons/fa'
+
+function Register() {
+    // const [formdata, setFormData] = useState({
+    //     name: '',
+    //     email: '',
+    //     password: '',
+    //     password2: ''
+    // })
+
+    // const {name, email, password, password2} = formData
+
+    const [name, setName] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [password2, setPassword2] = useState('')
+
+    const onChange = () => {
+        
+    }
+
+    const onSubmit = (e) => {
+        e.preventDefault()
+    }
+
+  return (
+    <>
+        <section className='heading'>
+            <h1><FaUser />Register</h1>
+            <p> Please create an account </p>
+        </section>
+        <section className="form">
+            <form onSubmit={onSubmit}>
+                <div className='form-group'>
+                    <input type='text' className='form-control' id='name' name='name' value={name} placeholder='Enter your name' onChange={(e) => setName(e.target.value)} />
+                </div>
+                <div className='form-group'>
+                    <input type='email' className='form-control' id='email' email='email' value={email} placeholder='Enter your email' onChange={(e) => setEmail(e.target.value)} />
+                </div>
+                <div className='form-group'>
+                    <input type='password' className='form-control' id='password' password='password' value={password} placeholder='Enter your password' onChange={(e) => setPassword(e.target.value)} />
+                </div>
+                <div className='form-group'>
+                    <input type='password' className='form-control' id='password2' password2='password2' value={password2} placeholder='Enter your password2' onChange={(e) => setPassword2(e.target.value)} />
+                </div>
+                <div className='form-group'>
+                    <button type="submit" className='btn btn-block'>
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </section>
+    </>
+  )
+}
+
+export default Register
+```
+
+- Login looks similar
+
+```jsx
+
+  return (
+    <>
+      <section className='heading'>
+          <h1><FaSignInAlt />  Login</h1>
+          <p> Login and start setting goals! </p>
+      </section>
+      <section className="form">
+          <form onSubmit={onSubmit}>
+              <div className='form-group'>
+                  <input type='email' className='form-control' id='email' email='email' value={email} placeholder='Enter your email' onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className='form-group'>
+                  <input type='password' className='form-control' id='password' password='password' value={password} placeholder='Enter your password' onChange={(e) => setPassword(e.target.value)} />
+              </div>
+              <div className='form-group'>
+                  <button type="submit" className='btn btn-block'>
+                    Submit
+                  </button>
+              </div>
+          </form>
+      </section>
+    </>
+  )
 ```
