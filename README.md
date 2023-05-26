@@ -671,3 +671,129 @@ const getMe = asyncHandler(async (req, res) => {
     })
 })
 ```
+
+### Protecting specific user goals
+
+#### protectg goals
+
+- in `goalRoutes.js`
+- all you have to do is add auth middle to all routes
+```js
+router.route('/', protect, getGoals)
+```
+
+#### creating goals while logged in as a user
+
+- since we have linked the user model to one of the properties of the Goal schema, we can find goals by specific users
+
+```js
+// REMEMBER: the req.user is set from the 'protect' middleware
+// req.user.id is safe to use if the middleware is being used on the same route / endpoint
+const getGoals = asyncHandler(asynbc (req, res) => {
+    const goals = await Goal.find({ user: req.user.id })
+    res.status(200).json(goals)
+})
+
+
+const setGoal = asyncHandler(async (req, res) => {
+    if(!req.body.text){
+        res.status(400)
+        throw new Error('Please add text field') // Utilizes new error middleware created
+    }
+
+    // MongoDB request
+    // all we are doing here is using the goal schema
+    // the schema requires two properties text, and user
+    const goal = await Goal.create({
+        text: req.body.text,
+        user: req.user.id // Similarly, since protect middleware is obtaining user data from the token and setting req.user property
+    })
+    res.status(200).json(goal)
+
+})
+```
+
+- Reference to goal schema
+
+```js
+const goalSchema = mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        requried: true,
+        ref: 'Us er' // Which MODEL this objectID in type refers to
+    },
+    text: {
+        type: String,
+        required: [true, 'Please add text value']
+    }
+}
+```
+
+#### updating and deleting while logged in
+
+
+```js
+const updateGoal = asyncHandler(async( req, res) => {
+    const goal = await Goal.findById(req.params.id)
+    const user = await User.findById(req.user.id)
+
+    // check to see if goal exists
+    if(!goal){
+        res.status(400)
+        throw new Error('Goal not found')
+    }
+
+    // check to see if user exists
+    if(!user) {
+        res.status(401)
+        throw new Error('User not found')
+    }
+
+    // compare the userid that is attatched to the goal matches the current logged in user (verified via token)
+    if(goal.user.toString() !== user.id){
+        res.status(401)
+        throw new Error('User not authorized')
+    }
+
+    const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, req.body, {
+        new: true
+    })
+    res.status(200).json(updatedGoal)
+
+    // OLD
+    // res.status(200).json({ message: 'Updated goal'})
+})
+
+
+// DELETE
+const deleteGoal = asyncHandler(async (req, res) => {
+    const goal = await Goal.findById(req.params.id)
+        const user = await User.findById(req.user.id)
+
+    if(!goal){
+        res.status(400)
+        throw new Error('Goal not found')
+    } 
+
+    if(!user) {
+        res.status(401)
+        throw new Error('User not found')
+    }
+
+    // compare the userid that is attatched to the goal matches the current logged in user (verified via token)
+    if(goal.user.toString() !== user.id){
+        res.status(401)
+        throw new Error('User not authorized')
+    }
+
+    await Goal.findByIdAndDelete(req.params.id)
+
+    res.status(200).json({ 
+        message: 'Goal Deleted',
+        id: req.params.id 
+    })
+
+    // OLD
+    // res.status(200).json({ message: 'Deleted goal'})
+})
+```

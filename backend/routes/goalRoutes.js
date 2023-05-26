@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const { getGoals, setGoal, updateGoal, deleteGoal } = require('../controllers/goalController')
+const { getGoals, setGoal, updateGoal, deleteGoal, getAllGoals } = require('../controllers/goalController')
+const { protect } = require('../middleware/authMiddleware')
 
 // Old version before importing functions from controller
 // router.get('/', (req, res) => {
@@ -12,9 +13,11 @@ const { getGoals, setGoal, updateGoal, deleteGoal } = require('../controllers/go
 // router.route('/').get(getGoals).post(setGoal)
 // router.route('/:id').put(updateGoal).delete(deleteGoal)
 
-router.get('/', getGoals)
-router.post('/', setGoal)
-router.put('/:id', updateGoal)
-router.delete('/:id', deleteGoal)
+
+router.get('/', protect, getGoals)
+router.post('/', protect, setGoal)
+router.put('/:id', protect, updateGoal)
+router.delete('/:id', protect, deleteGoal)
+router.get('/all', getAllGoals)
 
 module.exports = router

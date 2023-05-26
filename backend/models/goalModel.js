@@ -3,11 +3,11 @@ const goalSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         requried: true,
-        ref: 'User' // Which MODEL this objectID in type refers to
+        ref: 'Us er' // Which MODEL this objectID in type refers to
     },
     text: {
         type: String,
-        required: [true, 'Please add text vale']
+        required: [true, 'Please add text value']
     }
 }, {
     timestamps: true
