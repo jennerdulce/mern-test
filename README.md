@@ -1019,3 +1019,162 @@ export default Register
     </>
   )
 ```
+
+### redux
+
+#### creating slices
+
+- create a folder in features
+- create a file called `authSlice.js`
+
+```js
+// slice is a slice of state
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit'
+
+// when a user logs in, user data will be stored in localstorage
+// get user from localStorage
+const user = JSON.parse(localStorage.getItem('user'))
+
+const initialState = {
+    user: user ? user : null,
+    isError: false,
+    isSuccess: false,
+    isLoading: false,
+    message: ''
+}
+
+// state being managed that pertains to auth/authentication
+export const authSlice = createSlice({
+    name: 'auth',
+    initialState,
+    reducers: {
+        reset: (state) => {
+            state.isLoading = false
+            state.isSuccess = false
+            state.isError = false
+            state.message = ''
+        } // allows to reset state to default values
+    },
+    extraReducers: () => {}
+})
+
+// actions my guess are reducer functions
+export const { reset } = authSlice.actions
+
+// how we export the reducer
+export default authSlice.reducer
+```
+- now that this slice has been created, now we need to import that slice into the store
+- in `store.js`
+
+```js
+import { configureStore } from '@reduxjs/toolkit'
+import authReducer from '../features/auth/authSlice'
+
+export const store = configureStore({
+    reducer: {
+        auth: authReducer
+    }
+})
+
+```
+
+### connecting frontend to backend
+
+#### registering a user
+
+##### async thunk function
+
+
+- in frontend directory enter command in termonal `npm i axios react-toastify`
+
+```js
+// in authService.js
+// purpose of authService is strictly for making http request and sending back and sending data in local storage
+
+import axios from 'axios'
+const API_URL = 'api/users/'
+
+// register user
+// makes request to endpoint api/users/ and sends following data, userData
+const register = async (userData) => {
+    const registeredUser = await axios.post(API_URL, userData)
+
+    // when making an axios request, returns an object with a property of 'data'
+    if(registeredUser.data) {
+        localStorage.setItem('user', JSON.stringify(registeredUser.data))
+    }
+}
+
+const authService = {
+    register
+}
+
+export default authService
+```
+
+- import to authSlice and use 
+
+```js
+// Create this in authSlice.js
+import authService from './authService.js'
+export const register = createAsyncThunk('auth/register', async (user, thunkAPI) => {
+    try {
+        return await authService.register(user)
+    } catch (error) {
+        const message = ((error.response && error.response.data && error.response.data.message) || error.message || error.toString())
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+```
+
+##### creating a proxy for api / endpoints
+
+- in frontend package.json add proxy
+
+```js
+  "name": "frontend",
+  "version": "0.1.0",
+  "proxy": "http://localhost:3001", // this
+  "private": true,
+```
+
+##### account for pending, fulfilled, and rejected states of request
+
+- add this to your slice
+    - specifically in `extraReducers`
+
+```js
+export const authSlice = createSlice({
+    name: 'auth',
+    initialState,
+    reducers: {
+        reset: (state) => {
+            state.isLoading = false
+            state.isSuccess = false
+            state.isError = false
+            state.message = ''
+        } // allows to reset state to default values
+    },
+    extraReducers: (builder) => { // HERE
+        builder
+            .addCase(register.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(register.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.isSuccess = true
+                state.user = action.payload
+            })
+            .addCase(register.rejected, (state, action) => {
+                state.user = null
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload // message is sent though return thunkAPI.rejectWithValue(message) in authSlice.js
+            })
+    }
+    
+})
+```
+
+##### dispatch data from registration form
