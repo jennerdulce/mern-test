@@ -1,7 +1,22 @@
 import React from 'react'
-
 import {useState, useEffect} from 'react'
-import {FaUser} from 'react-icons/fa'
+
+// spinner for loading
+import Spinner from '../components/Spinner'
+
+// bring in register and rest redux functions that ultimately manipulates global state when invoked
+import { register, reset } from '../features/auth/authSlice'
+
+// useSelector: to use redux global state variables
+// useDispatch: to dispatch functions created in redux
+import { useSelector, useDispatch } from 'react-redux'
+
+// used to redirect
+import { useNavigate } from 'react-router-dom'
+
+import { toast } from 'react-toastify'
+
+import { FaUser } from 'react-icons/fa'
 
 function Register() {
     // const [formdata, setFormData] = useState({
@@ -12,6 +27,24 @@ function Register() {
     // })
 
     // const {name, email, password, password2} = formData
+
+    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth ) 
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+
+
+    useEffect(() => {
+        if(isError) {
+            toast.error(message)
+        }
+
+        if(isSuccess || user) {
+            navigate('/')
+        }
+
+        dispatch(reset())
+
+    }, [user, isError, isSuccess, message, navigate, dispatch])
 
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
@@ -24,6 +57,21 @@ function Register() {
 
     const onSubmit = (e) => {
       e.preventDefault()
+      if(password !== password2) {
+        toast.error('Passwords do not match')
+      } else {
+        const userData = {
+            name,
+            email,
+            password
+        }
+        console.log('User Data: ', userData)
+        dispatch(register(userData))
+      }
+    }
+
+    if(isLoading) {
+        return <Spinner />
     }
 
   return (

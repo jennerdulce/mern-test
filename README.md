@@ -1156,7 +1156,7 @@ export const authSlice = createSlice({
             state.message = ''
         } // allows to reset state to default values
     },
-    extraReducers: (builder) => { // HERE
+    extraReducers: (builder) => { // HERE:
         builder
             .addCase(register.pending, (state) => {
                 state.isLoading = true

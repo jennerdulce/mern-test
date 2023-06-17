@@ -3,7 +3,7 @@ const goalSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         requried: true,
-        ref: 'Us er' // Which MODEL this objectID in type refers to
+        ref: 'User' // Which MODEL this objectID in type refers to
     },
     text: {
         type: String,

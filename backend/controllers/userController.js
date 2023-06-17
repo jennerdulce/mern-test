@@ -24,7 +24,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // @access Public
 
 const registerUser = asyncHandler(async (req, res) => {
-    const {name, email, password} = req.body
+    const { name, email, password } = req.body
 
     if (!name || !email || !password) {
         res.status(400)
@@ -64,22 +64,17 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const getMe = asyncHandler(async (req, res) => {
     // res.json({ message: 'User data displayed '})
-    const { _id, name, email } = await User.findById(req.user.id)
-    res.status(200).json({
-        id: _id,
-        name: name,
-        email: email
-    })
+    req.status(200).json(req.user)
 })
 
 // @desc Authenticate and log a user in
 // @route POST /api/users/login
 // @access Public
-    // is public because all users begin not logged in, this should be usable by everyone
+// is public because all users begin not logged in, this should be usable by everyone
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body
-    const user = await User.findOne( {email} )
+    const user = await User.findOne({ email })
 
     if (user && (await bcrypt.compare(password, user.password))) {
         res.status(201).json({
@@ -88,11 +83,11 @@ const loginUser = asyncHandler(async (req, res) => {
             email: user.email,
             token: generateToken(user._id),
             message: 'User successfully logged in!'
-           }) 
-        } else {
-            res.status(400)
-            throw new Error('Invalid user data')
-        }
+        })
+    } else {
+        res.status(400)
+        throw new Error('Invalid user data')
+    }
 })
 
 module.exports = {

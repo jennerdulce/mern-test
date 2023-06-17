@@ -1,49 +1,93 @@
 import React from 'react'
 
-import {useState, useEffect} from 'react'
-import {FaSignInAlt} from 'react-icons/fa'
+import { useState, useEffect } from 'react'
+import { FaSignInAlt } from 'react-icons/fa'
+
+// spinner for loading
+import Spinner from '../components/Spinner'
+
+// bring in register and rest redux functions that ultimately manipulates global state when invoked
+import { login, reset } from '../features/auth/authSlice'
+
+// useSelector: to use redux global state variables
+// useDispatch: to dispatch functions created in redux
+import { useSelector, useDispatch } from 'react-redux'
+
+// used to redirect
+import { useNavigate } from 'react-router-dom'
+
+import { toast } from 'react-toastify'
 
 function Login() {
-    // const [formdata, setFormData] = useState({
-    //     name: '',
-    //     email: '',
-    //     password: '',
-    //     password2: ''
-    // })
+  const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
-    // const {name, email, password, password2} = formData
+  // const [email, setEmail] = useState('')
+  // const [password, setPassword] = useState('')
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
 
-    const onChange = () => {
-        
+  const { email, password } = formData
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(message)
     }
 
-    const onSubmit = (e) => {
-        e.preventDefault()
+    if (isSuccess && user) {
+      navigate('/')
     }
+
+    dispatch(reset())
+
+  }, [user, isError, isSuccess, message, navigate, dispatch])
+
+  const onChange = (e) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  const onSubmit = (e) => {
+    e.preventDefault()
+
+    const userData = {
+      email,
+      password
+    }
+
+    dispatch(login(userData))
+
+    if (isLoading) {
+      return <Spinner />
+    }
+  }
 
   return (
     <>
       <section className='heading'>
-          <h1><FaSignInAlt />  Login</h1>
-          <p> Login and start setting goals! </p>
+        <h1><FaSignInAlt />  Login</h1>
+        <p> Login and start setting goals! </p>
       </section>
       <section className="form">
-          <form onSubmit={onSubmit}>
-              <div className='form-group'>
-                  <input type='email' className='form-control' id='email' email='email' value={email} placeholder='Enter your email' onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div className='form-group'>
-                  <input type='password' className='form-control' id='password' password='password' value={password} placeholder='Enter your password' onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <div className='form-group'>
-                  <button type="submit" className='btn btn-block'>
-                    Submit
-                  </button>
-              </div>
-          </form>
+        <form onSubmit={onSubmit}>
+          <div className='form-group'>
+            <input type='email' className='form-control' id='email' name='email' value={email} placeholder='Enter your email' onChange={onChange} />
+          </div>
+          <div className='form-group'>
+            <input type='password' className='form-control' id='password' name='password' value={password} placeholder='Enter your password' onChange={onChange} />
+          </div>
+          <div className='form-group'>
+            <button type="submit" className='btn btn-block'>
+              Submit
+            </button>
+          </div>
+        </form>
       </section>
     </>
   )
