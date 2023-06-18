@@ -1,5 +1,75 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import goalService from './goalService'
 
-const user = JSON.parse(localStorage.getItem('user'))
+// const user = JSON.parse(localStorage.getItem('user'))
 
+const initialState = {
+    // user: user ? user : null,
+    isError: false,
+    isSuccess: false,
+    isLoading: false,
+    message: '',
+    goals: [],
+}
+
+// Get User Goals
+export const getGoals = createAsyncThunk('goal/getGoals', async (user, thunkAPI) => {
+    try {
+        return await goalService.getGoals(user)
+    } catch (error) {
+        const message = ((error.response && error.response.data && error.response.data.message) || error.message || error.toString())
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
+// Create User Goal
+export const createGoal = createAsyncThunk('goal/createGoal', async (goalText, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user.token
+        return await goalService.createGoal(goalText, token)
+    } catch (error) {
+        const message = ((error.response && error.response.data && error.response.data.message) || error.message || error.toString())
+        return thunkAPI.rejectWithValue(message)
+    }
+})
+
+export const goalSlice = createSlice({
+    name: 'goal',
+    initialState,
+    reducers: {
+        reset: (state) => initialState,
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(getGoals.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(getGoals.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.isSuccess = true
+                state.goals = action.payload
+            })
+            .addCase(getGoals.rejected, (state, action) => {
+                state.goals = []
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload
+            })
+            .addCase(createGoal.pending, (state) => {
+                state.isLoading = true
+            })
+            .addCase(createGoal.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.isSuccess = true
+                state.goals.push(action.payload)
+            })
+            .addCase(createGoal.rejected, (state, action) => {
+                state.isLoading = false
+                state.isError = true
+                state.message = action.payload
+            })
+    },
+})
+
+export const { reset } = goalSlice.actions
+export default goalSlice.reducer

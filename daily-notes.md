@@ -11,3 +11,13 @@
 - i previously added a proxy to the frontend `package.json` and set it to `5000` which was wrong
     - i then changed it to the correct localhost that my backend is running on
     - this solved the issue
+
+## 6/18/23
+### Slice reducer for key "goal" (keyname) returned undefined
+- The slice reducer was not working
+- Honing in on the problem that there was not INITAL STATE being passed which the value was null
+- I knew the fix would be in the files that pertain to redux
+    - goalService.js
+    - goalSlice.js
+- Particularly in the reducer/slice
+- sure enough I noticed that I had misspelled initialState and initalState
