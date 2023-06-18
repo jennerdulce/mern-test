@@ -21,3 +21,10 @@
     - goalSlice.js
 - Particularly in the reducer/slice
 - sure enough I noticed that I had misspelled initialState and initalState
+
+### New goal not being created
+- as I was trying to enter a new goal into the goal form I was getting an error of Unauthorized User with the status code of 401
+- i understood that it had to deal with the request to the api
+- so after making sure my frontend request was good i went to check the route in the
+- looking at the route to create a goal, i saw that it was actually a post request
+- i checked the backend to find out that i was making a get request

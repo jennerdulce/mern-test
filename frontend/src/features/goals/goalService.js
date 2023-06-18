@@ -13,13 +13,13 @@ const getGoals = async (userData) => {
 const createGoal = async (goalData, token) => {
     const config = {
         headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
         }
     }
-    const response = await axios.get(API_URL, goalData, config)
+    const response = await axios.post(API_URL, goalData, config)
 
     if (response.data) {
-        return response
+        return response.data
     }
 }
 

@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 // import GoalItem from '../components/GoalItem'
-// import GoalForm from '../components/GoalForm'
+import GoalForm from '../components/GoalForm'
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -23,7 +23,7 @@ function Dashboard() {
         <p>Goals Dashboard</p>
       </section>
 
-      {/* <GoalForm /> */}
+      <GoalForm />
 
       <section>
         {/* {goals.length > 0 ? (
